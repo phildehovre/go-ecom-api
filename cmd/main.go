@@ -11,6 +11,7 @@ import (
 )
 
 func main() {
+	// Create new instance of DB
 	db, err := db.NewMySQLStorage(mysql.Config{
 		User:                 config.Envs.DBUser,
 		Passwd:               config.Envs.DBPassword,
@@ -24,8 +25,12 @@ func main() {
 		log.Fatal(err)
 	}
 
+	// Initialise DB
 	initStorage(db)
+
+	// Create new server instance
 	server := api.NewAPIServer(":8080", db)
+	// Initialise server
 	if err := server.Run(); err != nil {
 		log.Fatalf("server failed to run  %v", err)
 	}
@@ -38,5 +43,5 @@ func initStorage(db *sql.DB) {
 		log.Fatal(err)
 	}
 
-	log.Println("DB: SUccessfully connected!")
+	log.Println("DB: Successfully connected!")
 }

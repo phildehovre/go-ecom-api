@@ -16,6 +16,9 @@ type Config struct {
 	DBName     string
 }
 
+// This pattern is called SINGLETON
+// We invoke initConfig once
+// and store the results in Envs
 var Envs = initConfig()
 
 func initConfig() Config {
@@ -23,10 +26,10 @@ func initConfig() Config {
 	return Config{
 		PublicHost: getEnv("PUBLIC_HOST", "http://localhost"),
 		Port:       getEnv("PORT", "8080"),
-		DBUser:     getEnv("DB_USER", "root"),
-		DBPassword: getEnv("DB_PASSWORD", "Inline7+"),
+		DBUser:     getEnv("DB_USER", "philippe"),
+		DBPassword: getEnv("DB_PASSWORD", "Inline7+mysql"),
 		DBAddress:  fmt.Sprintf("%s:%s", getEnv("DB_HOST", "127.0.0.1"), getEnv("DB_PORT", "3306")),
-		DBName:     getEnv("DB_NAME", "ecommerce"),
+		DBName:     getEnv("DB_NAME", "ecom"),
 	}
 }
 
