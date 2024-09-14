@@ -4,7 +4,7 @@ import "time"
 
 type UserStore interface {
 	GetUserByEmail(email string) (*User, error)
-	GetUserById(id int) error
+	GetUserById(id int) (*User, error)
 	CreateUser(User) error
 }
 type User struct {
