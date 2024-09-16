@@ -20,18 +20,25 @@ func NewHandler(store types.UserStore) *Handler {
 }
 
 func (h *Handler) RegisterRoutes(router *mux.Router) {
+	router.HandleFunc("/greet", h.handleGreet).Methods("GET")
 	router.HandleFunc("/login", h.handleLogin).Methods("POST")
 	router.HandleFunc("/register", h.handleRegister).Methods("POST")
 }
 
 func (h *Handler) handleLogin(w http.ResponseWriter, r *http.Request) {
+	utils.WriteJSON(w, http.StatusOK, []byte("Hello world!"))
 
+}
+
+func (h *Handler) handleGreet(w http.ResponseWriter, r *http.Request) {
+	utils.WriteJSON(w, http.StatusOK, "Hello there!!!")
 }
 
 func (h *Handler) handleRegister(w http.ResponseWriter, r *http.Request) {
 	// get json payload
 	var payload types.RegisterUserPayload
 	if err := utils.ParseJSON(r, &payload); err != nil {
+		fmt.Println(payload)
 		utils.WriteError(w, http.StatusBadRequest, err)
 		return
 	}

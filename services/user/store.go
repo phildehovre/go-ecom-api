@@ -50,9 +50,25 @@ func scanRowIntoUser(rows *sql.Rows) (*types.User, error) {
 }
 
 func (s *Store) GetUserById(id int) (*types.User, error) {
-	return nil, nil
+	rows, err := s.db.Query("SELECT * FROM users WHERE id = ?", id)
+	if err != nil {
+		return nil, err
+	}
+
+	u := new(types.User)
+	for rows.Next() {
+		u, err = scanRowIntoUser(rows)
+	}
+	if u.ID == 0 {
+		return nil, fmt.Errorf("user not found with id %d", id)
+	}
+	return u, nil
 }
 
-func (s *Store) CreateUser(types.User) error {
+func (s *Store) CreateUser(user types.User) error {
+	_, err := s.db.Exec("INSERT INTO users (firstName, lastName, email, password) VALUES (?,?,?,?)", user.FirstName, user.LastName, user.Email, user.Password)
+	if err != nil {
+		return err
+	}
 	return nil
 }
