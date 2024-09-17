@@ -27,7 +27,7 @@ func initConfig() Config {
 		PublicHost: getEnv("PUBLIC_HOST", "http://localhost"),
 		Port:       getEnv("PORT", "8080"),
 		DBUser:     getEnv("DB_USER", "philippe"),
-		DBPassword: getEnv("DB_PASSWORD", "Inline7+mysql"),
+		DBPassword: getEnv("DB_PASSWORD", "Inline7%2Bmysql"),
 		DBAddress:  fmt.Sprintf("%s:%s", getEnv("DB_HOST", "127.0.0.1"), getEnv("DB_PORT", "3306")),
 		DBName:     getEnv("DB_NAME", "ecom"),
 	}
