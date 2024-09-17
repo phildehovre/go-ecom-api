@@ -3,9 +3,11 @@ package user
 import (
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/gorilla/mux"
+	"github.com/phildehovre/go-complete-api/config"
 	"github.com/phildehovre/go-complete-api/services/auth"
 	"github.com/phildehovre/go-complete-api/types"
 	"github.com/phildehovre/go-complete-api/utils"
@@ -20,18 +22,46 @@ func NewHandler(store types.UserStore) *Handler {
 }
 
 func (h *Handler) RegisterRoutes(router *mux.Router) {
-	router.HandleFunc("/greet", h.handleGreet).Methods("GET")
 	router.HandleFunc("/login", h.handleLogin).Methods("POST")
 	router.HandleFunc("/register", h.handleRegister).Methods("POST")
+	router.HandleFunc("/users/:id", h.handleGetUserByID).Methods("GET")
 }
 
 func (h *Handler) handleLogin(w http.ResponseWriter, r *http.Request) {
-	utils.WriteJSON(w, http.StatusOK, []byte("Hello world!"))
+	var payload types.LoginUserPayload
+	// parse payload
+	if err := utils.ParseJSON(r, &payload); err != nil {
+		fmt.Println(payload)
+		utils.WriteError(w, http.StatusBadRequest, err)
+		return
+	}
 
-}
+	// validate payload
+	if err := utils.Validate.Struct(payload); err != nil {
+		errors := err.(validator.ValidationErrors)
+		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("invalid payload of %v", errors))
+		return
+	}
+	// check if user exists
+	user, _ := h.store.GetUserByEmail(payload.Email)
+	if user == nil {
+		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("user with email %s does not exist", payload.Email))
+		return
+	}
 
-func (h *Handler) handleGreet(w http.ResponseWriter, r *http.Request) {
-	utils.WriteJSON(w, http.StatusOK, "Hello there!!!")
+	if !auth.ComparePasswords(user.Password, []byte(payload.Password)) {
+		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("not found, invalid email or password"))
+		return
+	}
+
+	secret := []byte(config.Envs.JWTSecret)
+	token, err := auth.CreateJWT(secret, user.ID)
+	if err != nil {
+		utils.WriteError(w, http.StatusInternalServerError, fmt.Errorf("Couldnot authenticate at this time"))
+		return
+	}
+
+	utils.WriteJSON(w, http.StatusOK, map[string]string{"token": token})
 }
 
 func (h *Handler) handleRegister(w http.ResponseWriter, r *http.Request) {
@@ -51,6 +81,7 @@ func (h *Handler) handleRegister(w http.ResponseWriter, r *http.Request) {
 	// check if user exists
 	_, err := h.store.GetUserByEmail(payload.Email)
 	if err == nil {
+		// check for non-existent err means there already is a user with the email address
 		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("user with email %s already exists", payload.Email))
 	}
 
@@ -74,4 +105,15 @@ func (h *Handler) handleRegister(w http.ResponseWriter, r *http.Request) {
 
 	utils.WriteJSON(w, http.StatusCreated, nil)
 
+}
+
+func (h *Handler) handleGetUserByID(w http.ResponseWriter, r *http.Request) {
+	id := strings.Split(r.URL.Path, "/")
+
+	fmt.Println(id)
+	// user, _ := h.store.GetUserById(id)
+	// if user == nil {
+	// 	utils.WriteError(w, http.StatusNotFound, fmt.Errorf("user with id %d not found", id))
+	// }
+	utils.WriteJSON(w, http.StatusFound, id)
 }
