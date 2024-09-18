@@ -43,7 +43,11 @@ func (h *Handler) handleLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// check if user exists
-	user, _ := h.store.GetUserByEmail(payload.Email)
+	user, err := h.store.GetUserByEmail(payload.Email)
+	if err != nil {
+		utils.WriteError(w, http.StatusInternalServerError, fmt.Errorf("error retrieving user: %v", err))
+		return
+	}
 	if user == nil {
 		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("user with email %s does not exist", payload.Email))
 		return
