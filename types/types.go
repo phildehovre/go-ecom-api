@@ -11,6 +11,13 @@ type UserStore interface {
 type ProductStore interface {
 	GetProducts() ([]Product, error)
 	CreateProduct(Product) error
+	GetProductsByIDs(ps []int) ([]Product, error)
+	UpdateProduct(Product) error
+}
+
+type OrderStore interface {
+	CreateOrder(Order) (int, error)
+	CreateOrderItem(OrderItem) error
 }
 
 type Product struct {
@@ -32,6 +39,20 @@ type User struct {
 	CreatedAt time.Time `json:"createdAt"`
 }
 
+type Order struct {
+	UserID  int     `json:"userId"`
+	Total   float64 `json:"total"`
+	Status  string  `json:"status"`
+	Address string  `json:"address"`
+}
+
+type OrderItem struct {
+	OrderID   int     `json:"orderId"`
+	ProductID int     `json:"productId"`
+	Quantity  int     `json:"quantity"`
+	Price     float64 `json:"price"`
+}
+
 type RegisterUserPayload struct {
 	FirstName string `json:"firstName" validate:"required"`
 	LastName  string `json:"lastName" validate:"required"`
@@ -50,4 +71,15 @@ type CreateProductPayload struct {
 	Image       string  `json:"image" validate:"required"`
 	Price       float64 `json:"price" validate:"required"`
 	Quantity    int     `json:"quantity" validate:"required"`
+}
+
+type OrderPayload struct {
+}
+
+type CartItem struct {
+	ProductID int `json:"productId"`
+	Quantity  int `json:"quantity"`
+}
+type CartCheckoutPayload struct {
+	Items []CartItem `json"items" validate:"required"`
 }
